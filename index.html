@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Potato Leaf Disease Detection System</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-image: url(image/image.jpg); /* Local image path */
+      background-size: cover;
+      background-position: center;
+      background-repeat: no-repeat;
+      margin: 0;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-height: 100vh;
+      color: rgb(243, 245, 241);
+      backdrop-filter: blur(5px);
+      box-sizing: border-box;
+    }
+
+    h1 {
+      background-color: rgba(0, 0, 0, 0.5);
+      padding: 20px;
+      border-radius: 12px;
+      text-align: center;
+      max-width: 90%;
+    }
+
+    .upload-container {
+      background-color: rgba(0, 0, 0, 0.459);
+      padding: 30px;
+      border-radius: 15px;
+      text-align: center;
+      max-width: 500px;
+      width: 100%;
+      box-sizing: border-box;
+      margin-top: 20px;
+    }
+
+    input[type="file"] {
+      margin: 20px 0;
+      color: rgb(67, 250, 0);
+      width: 100%;
+    }
+
+    button {
+      padding: 10px 20px;
+      border: none;
+      background-color: #4CAF50;
+      color: rgb(248, 248, 248);
+      font-size: 16px;
+      cursor: pointer;
+      border-radius: 8px;
+      width: 100%;
+      max-width: 200px;
+    }
+
+    button:hover {
+      background-color: #e5eae5;
+      color: #000;
+    }
+
+    #preview {
+      display: none;
+      max-width: 100%;
+      height: auto;
+      margin-top: 15px;
+      border-radius: 10px;
+      box-shadow: 0 0 10px rgba(255, 255, 255, 0.3);
+    }
+
+    #result {
+      margin-top: 20px;
+      font-size: 18px;
+      color: #fff;
+    }
+
+    @media (max-width: 600px) {
+      h1 {
+        font-size: 20px;
+        padding: 15px;
+      }
+
+      .upload-container {
+        padding: 20px;
+      }
+
+      button {
+        font-size: 14px;
+        padding: 8px 16px;
+      }
+
+      #result {
+        font-size: 16px;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <h1>Potato Leaf Disease Detection System </h1>
+
+  <div class="upload-container">
+    <form id="uploadForm" enctype="multipart/form-data">
+      <input type="file" name="file" accept="image/*" required>
+      <br>
+      <img id="preview" alt="Image preview">
+      <br>
+      <button type="submit">Submit</button>
+    </form>
+    <div id="result"></div>
+  </div>
+
+  <script>
+    const form = document.getElementById('uploadForm');
+    const resultDiv = document.getElementById('result');
+    const preview = document.getElementById('preview');
+    const fileInput = form.querySelector('input[type="file"]');
+
+    // Show image preview
+    fileInput.addEventListener('change', () => {
+      const file = fileInput.files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+          preview.src = e.target.result;
+          preview.style.display = 'block';
+        };
+        reader.readAsDataURL(file);
+      }
+    });
+
+    // Handle form submit
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const formData = new FormData(form);
+      resultDiv.innerText = "Processing image...";
+
+      try {
+        const response = await fetch('http://localhost:5000/predict', {
+          method: 'POST',
+          body: formData
+        });
+
+        const result = await response.json();
+        resultDiv.innerHTML = `<strong>Prediction:</strong> ${result.label}<br><strong>Confidence:</strong> ${result.confidence}%`;
+        form.reset();
+        preview.style.display = 'none';
+      } catch (error) {
+        resultDiv.innerText = `Error uploading or predicting image: ${error.message}`;
+      }
+    });
+  </script>
+
+</body>
+</html>
